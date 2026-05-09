@@ -6,42 +6,96 @@ interface RetroLayoutProps {
 }
 
 const RetroLayout = ({ children }: RetroLayoutProps) => {
-  const [visitorCount] = useState(18472);
+  const [visitorCount, setVisitorCount] = useState(18472);
+  const [lastUpdated, setLastUpdated] = useState("April 2, 2026");
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [commits, setCommits] = useState<Array<{ repo: string; msg: string; date: string; url: string }>>([]);
-  const [workingOn, setWorkingOn] = useState<{ repo: string; msg: string; url: string } | null>(null);
+  const [commits, setCommits] = useState<Array<{ repo: string; msg: string; date: string; url: string; type: string }>>([]);
+  const [workingOnRepos, setWorkingOnRepos] = useState<Array<{ repo: string; url: string }>>([]);
   const [isLoadingGithub, setIsLoadingGithub] = useState(true);
   const location = useLocation();
 
+  const [userStats, setUserStats] = useState<{ public_repos: number; followers: number; following: number } | null>(null);
+
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    
+    // Simple visitor counter simulation using localStorage
+    const storedVisits = localStorage.getItem("site_visits_v2");
+    const baseVisits = 0;
+    if (storedVisits) {
+      const newCount = parseInt(storedVisits) + 1;
+      setVisitorCount(newCount);
+      localStorage.setItem("site_visits_v2", newCount.toString());
+    } else {
+      localStorage.setItem("site_visits_v2", baseVisits.toString());
+      setVisitorCount(baseVisits);
+    }
+
+    // Fetch user profile stats
+    fetch("https://api.github.com/users/AdityaPachupate")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data) {
+          setUserStats({
+            public_repos: data.public_repos,
+            followers: data.followers,
+            following: data.following
+          });
+        }
+      })
+      .catch(() => {});
+
     return () => clearInterval(timer);
   }, []);
 
   useEffect(() => {
     setIsLoadingGithub(true);
-    fetch("https://api.github.com/users/AdityaPachupate/events/public?per_page=30")
+    fetch("https://api.github.com/users/AdityaPachupate/events/public?per_page=100")
       .then((r) => r.ok ? r.json() : [])
       .then((events: any[]) => {
-        const pushes = (events || []).filter((e) => e.type === "PushEvent");
-        const items: Array<{ repo: string; msg: string; date: string; url: string }> = [];
-        for (const ev of pushes) {
-          const repo = ev.repo?.name?.split("/")[1] ?? "repo";
-          const commitsArr = ev.payload?.commits ?? [];
-          for (const c of commitsArr.slice().reverse()) {
-            const sha = c.sha?.slice(0, 7) ?? "";
-            items.push({
-              repo,
-              msg: (c.message || "").split("\n")[0].slice(0, 60),
-              date: new Date(ev.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-              url: `https://github.com/${ev.repo.name}/commit/${c.sha}`,
-            });
-            if (items.length >= 5) break;
-          }
-          if (items.length >= 5) break;
+        console.log("GitHub Events fetched:", events);
+        if (!events || events.length === 0) {
+          setIsLoadingGithub(false);
+          return;
         }
+
+        const items: Array<{ repo: string; msg: string; date: string; url: string; type: string }> = [];
+        const seenReposForWorkingOn = new Set<string>();
+        const activeRepos: Array<{ repo: string; url: string }> = [];
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        for (const ev of events) {
+          const repoName = ev.repo?.name?.split("/")[1] ?? "repo";
+          const eventDate = new Date(ev.created_at);
+          const dateStr = eventDate.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          const repoUrl = `https://github.com/${ev.repo.name}`;
+
+          // Collect unique repos from the last 30 days
+          if (!seenReposForWorkingOn.has(repoName) && eventDate >= thirtyDaysAgo) {
+            seenReposForWorkingOn.add(repoName);
+            activeRepos.push({ repo: repoName, url: repoUrl });
+          }
+
+          let msg = "";
+          let url = repoUrl;
+
+          if (ev.type === "PushEvent") {
+            const lastCommit = ev.payload?.commits?.[ev.payload.commits.length - 1];
+            msg = lastCommit ? lastCommit.message.split("\n")[0] : "Pushed changes";
+            url = lastCommit ? `${repoUrl}/commit/${lastCommit.sha}` : repoUrl;
+            
+            if (msg && items.length < 5) {
+              items.push({ repo: repoName, msg: msg.slice(0, 60), date: dateStr, url, type: ev.type });
+            }
+          }
+        }
+        
         setCommits(items);
-        if (items[0]) setWorkingOn({ repo: items[0].repo, msg: items[0].msg, url: `https://github.com/AdityaPachupate/${items[0].repo}` });
+        setWorkingOnRepos(activeRepos.slice(0, 5)); // Show top 5 active repos
+        if (items[0]) {
+          setLastUpdated(items[0].date);
+        }
         setIsLoadingGithub(false);
       })
       .catch(() => {
@@ -163,7 +217,7 @@ const RetroLayout = ({ children }: RetroLayoutProps) => {
               { icon: "💼", label: "LinkedIn", href: "https://www.linkedin.com/in/adityapachupate/" },
               { icon: "🐦", label: "Twitter", href: "https://x.com/Adityatwtss" },
               { icon: "📧", label: "Email Me", href: "mailto:adityapachupate@gmail.com" },
-              { icon: "📄", label: "My Resume", href: "https://drive.google.com/file/d/1xESongoZi-xckAUGvN2VM_PGnAjxuW_c/view?usp=sharing" },
+              { icon: "📄", label: "My Resume", href: "/Aditya_Pachupate_Resume.pdf" },
             ].map((link, i) => (
               <div key={i} style={{ padding: "2px 0", display: "flex", alignItems: "center", gap: "4px" }}>
                 <span style={{ fontSize: "11px" }}>{link.icon}</span>
@@ -177,24 +231,31 @@ const RetroLayout = ({ children }: RetroLayoutProps) => {
             <div style={{ textAlign: "center", padding: "4px", border: "1px solid hsl(0 0% 80%)", background: "hsl(0 0% 13%)", color: "hsl(120 100% 50%)", fontFamily: "'Courier New', monospace", fontSize: "14px", letterSpacing: "2px", marginBottom: "4px" }}>
               {visitorCount.toString().padStart(7, "0")}
             </div>
-            <div style={{ textAlign: "center", fontSize: "9px" }}>Visitors since Jan 2005</div>
+            <div style={{ textAlign: "center", fontSize: "9px" }}>Visitors since launch</div>
             <div style={{ marginTop: "8px", borderTop: "1px dotted hsl(0 0% 75%)", paddingTop: "4px" }}>
-              <div>📄 Pages: 12</div>
-              <div>🕐 Last Updated:</div>
-              <div style={{ fontWeight: "bold" }}>April 2, 2026</div>
+              <div>📄 Pages: {navTabs.length + 2}</div>
+              {userStats && (
+                <>
+                  <div>📂 Repos: {userStats.public_repos}</div>
+                  <div>👥 Followers: {userStats.followers}</div>
+                </>
+              )}
+              <div style={{ marginTop: "4px" }}>🕐 Last Updated:</div>
+              <div style={{ fontWeight: "bold" }}>{lastUpdated}</div>
             </div>
           </div>
 
-          <div className="retro-header-yellow" style={{ fontSize: "10px" }}>🔗 Web Ring</div>
-          <div style={{ padding: "6px 8px", fontSize: "10px", textAlign: "center" }}>
-            <a href="#">« Prev</a>{" | "}<a href="#">List</a>{" | "}<a href="#">Next »</a>
-            <div style={{ marginTop: "4px", fontSize: "9px", color: "hsl(0 0% 50%)" }}>DevRing 2005</div>
+          <div className="retro-header" style={{ fontSize: "10px" }}>📰 What's New</div>
+          <div style={{ padding: "6px 8px" }}>
+            {updates.map((update, i) => (
+              <div key={i} style={{ padding: "3px 0", borderBottom: i < updates.length - 1 ? "1px dotted hsl(0 0% 85%)" : "none", fontSize: "10px" }}>
+                <span style={{ color: "hsl(0 0% 50%)", fontSize: "9px" }}>[{update.date}]</span>{" "}
+                {update.text}
+              </div>
+            ))}
           </div>
 
-          <div style={{ padding: "8px", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-            <div style={{ width: "88px", height: "31px", background: "linear-gradient(180deg, hsl(220 60% 40%), hsl(220 70% 25%))", border: "1px solid hsl(220 70% 15%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "8px", fontWeight: "bold" }}>✅ VALID HTML</div>
-            <div style={{ width: "88px", height: "31px", background: "linear-gradient(180deg, hsl(120 40% 45%), hsl(120 50% 30%))", border: "1px solid hsl(120 50% 20%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "8px", fontWeight: "bold" }}>✅ VALID CSS</div>
-            <div style={{ width: "88px", height: "31px", background: "linear-gradient(180deg, hsl(0 70% 50%), hsl(0 70% 35%))", border: "1px solid hsl(0 70% 25%)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "8px", fontWeight: "bold" }}>🚫 NO FLASH!</div>
+          <div style={{ padding: "8px" }}>
           </div>
         </div>
 
@@ -217,25 +278,24 @@ const RetroLayout = ({ children }: RetroLayoutProps) => {
             </div>
           </div>
 
-          <div className="retro-header" style={{ fontSize: "10px" }}>📰 What's New</div>
-          <div style={{ padding: "6px 8px" }}>
-            {updates.map((update, i) => (
-              <div key={i} style={{ padding: "3px 0", borderBottom: i < updates.length - 1 ? "1px dotted hsl(0 0% 85%)" : "none", fontSize: "10px" }}>
-                <span style={{ color: "hsl(0 0% 50%)", fontSize: "9px" }}>[{update.date}]</span>{" "}
-                {update.text}
-              </div>
-            ))}
-          </div>
 
           <div className="retro-header" style={{ fontSize: "10px" }}>🔨 Currently Working On</div>
           <div style={{ padding: "6px 8px", fontSize: "10px" }}>
             {isLoadingGithub ? (
               <div style={{ color: "hsl(0 0% 50%)", fontStyle: "italic" }}>Loading from GitHub...</div>
-            ) : workingOn ? (
+            ) : workingOnRepos.length > 0 ? (
               <>
-                <a href={workingOn.url} style={{ fontWeight: "bold", fontSize: "11px" }}>📂 {workingOn.repo}</a>
-                <div style={{ color: "hsl(0 0% 40%)", margin: "3px 0", fontStyle: "italic" }}>"{workingOn.msg}"</div>
-                <div style={{ fontSize: "9px", color: "hsl(0 0% 50%)" }}>Status: <span style={{ color: "hsl(120 60% 35%)", fontWeight: "bold" }}>Active</span> · auto-updated from GitHub</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {workingOnRepos.map((repo, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                      <span style={{ fontSize: "10px" }}>📂</span>
+                      <a href={repo.url} style={{ fontWeight: "bold", fontSize: "10px" }}>{repo.repo}</a>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ fontSize: "9px", color: "hsl(0 0% 50%)", marginTop: "8px", borderTop: "1px dotted hsl(0 0% 80%)", paddingTop: "4px" }}>
+                  Status: <span style={{ color: "hsl(120 60% 35%)", fontWeight: "bold" }}>Active</span> · Last 30 days
+                </div>
               </>
             ) : (
               <div style={{ color: "hsl(0 0% 50%)", fontStyle: "italic" }}>No recent activity found.</div>
@@ -287,9 +347,6 @@ const RetroLayout = ({ children }: RetroLayoutProps) => {
         </div>
       </div>
 
-      <div style={{ textAlign: "center", padding: "6px", background: "hsl(50 60% 95%)", borderBottom: "1px solid hsl(0 0% 75%)", fontSize: "10px" }}>
-        📝 <a href="#">Sign my Guestbook!</a> &nbsp;|&nbsp; 🔗 <a href="#">Link Exchange</a> &nbsp;|&nbsp; 📧 <a href="mailto:adityapachupate@gmail.com">Newsletter</a>
-      </div>
     </div>
   );
 };

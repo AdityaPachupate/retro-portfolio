@@ -1,0 +1,34 @@
+name: Compile Resume
+on:
+  push:
+    paths:
+      - 'AdityaPachupate.tex'
+    branches:
+      - main # Change this if your default branch is different (e.g., master)
+
+jobs:
+  build_latex:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Set up Git repository
+        uses: actions/checkout@v4
+
+      - name: Compile LaTeX document
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: AdityaPachupate.tex
+
+      - name: Move and Rename PDF
+        run: |
+          mkdir -p public
+          mv AdityaPachupate.pdf public/Aditya_Pachupate_Resume.pdf
+
+      - name: Commit and Push PDF
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/Aditya_Pachupate_Resume.pdf
+          git commit -m "chore: auto-compile resume PDF [skip ci]" || echo "No changes to commit"
+          git push

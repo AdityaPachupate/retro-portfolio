@@ -1,7 +1,8 @@
 import RetroLayout from "@/components/RetroLayout";
+import { useState, useEffect } from "react";
 
 const Resume = () => {
-  const resumeLink = "https://drive.google.com/file/d/1xESongoZi-xckAUGvN2VM_PGnAjxuW_c/view?usp=sharing";
+  const resumeLink = "/Aditya_Pachupate_Resume.pdf";
 
   return (
     <RetroLayout>
@@ -44,9 +45,9 @@ const Resume = () => {
             <tbody>
               {[
                 ["Languages", "C, C++, C#, JavaScript, TypeScript"],
-                ["Frontend", "HTML, CSS, Bootstrap, React.js, Angular, Tailwind CSS"],
-                ["Backend", "Node.js, Express.js, .NET Core, gRPC, Microservices Architecture"],
-                ["Database", "SQL, MongoDB, Redis"],
+                ["Frontend", "React.js, Angular, HTML, CSS, Tailwind CSS, IndexedDB (Offline Storage)"],
+                ["Backend", ".NET 8, gRPC, CQRS (MediatR), Microservices, Node.js, Express.js, Serilog"],
+                ["Database", "PostgreSQL, SQL Server, MongoDB, Redis, Entity Framework Core"],
                 ["Version Control", "Git, GitHub"],
                 ["Soft Skills", "Critical thinking, Data-driven decision making, Problem solving"],
               ].map(([label, value], i) => (
@@ -90,8 +91,8 @@ const Resume = () => {
               <span style={{ color: "hsl(0 0% 50%)", fontSize: "9px" }}>Feb 2025 - May 2025</span>
             </div>
             <ul style={{ margin: "4px 0 0 16px", padding: 0, lineHeight: "1.6" }}>
-              <li>Developed scalable web applications using C#, .NET Core Web API, and Microservices architecture.</li>
-              <li>Implemented gRPC for efficient inter-service communication and Redis for distributed caching.</li>
+              <li>Developed scalable web applications using C#, .NET Core Web API, and <strong>Microservices architecture</strong>.</li>
+              <li>Implemented <strong>gRPC</strong> for efficient inter-service communication and <strong>Redis</strong> for distributed caching.</li>
               <li>Worked with SQL databases, optimizing queries and managing data efficiently while collaborating in Agile teams.</li>
             </ul>
           </div>
@@ -104,18 +105,20 @@ const Resume = () => {
           </div>
           {[
             {
+              title: "Production-Ready Clinical CRM | .NET 8, React, CQRS, MediatR, IndexedDB",
+              links: { github: "https://github.com/AdityaPachupate/crm-fullstack" },
+              bullets: [
+                "Engineered a high-performance CRM using Vertical Slice Architecture and CQRS (MediatR), ensuring modularity and decoupling complex business logic for enterprise-scale maintainability.",
+                "Implemented Predictive Prefetching and Optimistic UI strategies to eliminate perceived API latency, paired with Offline Resilience using IndexedDB for persistent caching and data obfuscation.",
+                "Developed a Cascading Lifecycle (Soft Delete Engine) to manage complex data relationships and a robust Bulk CSV Import system with row-by-row validation and duplicate detection.",
+                "Integrated production-grade DevOps features including Structured Logging (Serilog), Automated Background Jobs for data health, and Health Check endpoints for cloud environment monitoring.",
+              ],
+            },
+            {
               title: "Full Stack E-commerce App | .NET Core, Angular, JWT",
               bullets: [
                 "Engineered a full-stack e-commerce platform using Angular for the frontend and ASP.NET Core Web API with JWT-based authentication and role-based authorization.",
                 "Implemented a complete product catalog, shopping cart, and order system using Entity Framework Core and SQL Server.",
-              ],
-            },
-            {
-              title: "MoodFlix | React, Appwrite, Tailwind CSS",
-              links: { github: "https://github.com/AdityaPachupate55/MoodFlix", live: "https://mood-flix-five.vercel.app/" },
-              bullets: [
-                "Built a modern movie discovery platform that dynamically curates content based on user behavior, improving session time and retention.",
-                "Integrated Appwrite for authentication, database, and serverless functions, enabling scalable and secure backend operations.",
               ],
             },
           ].map((proj, i) => (
@@ -124,7 +127,7 @@ const Resume = () => {
                 {proj.title}
                 {proj.links && (
                   <span style={{ fontWeight: "normal", marginLeft: "8px" }}>
-                    [<a href={proj.links.github}>GitHub</a> | <a href={proj.links.live}>Live</a>]
+                    [<a href={proj.links.github}>GitHub</a>]
                   </span>
                 )}
               </div>
@@ -141,7 +144,7 @@ const Resume = () => {
         <a href={resumeLink} target="_blank" rel="noopener noreferrer" className="retro-button" style={{ padding: "5px 20px", fontSize: "11px", textDecoration: "none" }}>
           📥 Download Resume (PDF)
         </a>
-        <div style={{ fontSize: "9px", color: "hsl(0 0% 50%)", marginTop: "4px" }}>Last updated: September 2024</div>
+        <div style={{ fontSize: "9px", color: "hsl(0 0% 50%)", marginTop: "4px" }}>Last updated: May 2026</div>
       </div>
     </RetroLayout>
   );
