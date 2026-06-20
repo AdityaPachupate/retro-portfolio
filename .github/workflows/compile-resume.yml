@@ -3,32 +3,25 @@ on:
   push:
     paths:
       - 'AdityaPachupate.tex'
-    branches:
-      - main # Change this if your default branch is different (e.g., master)
-
 jobs:
-  build_latex:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Set up Git repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Compile LaTeX document
         uses: xu-cheng/latex-action@v3
         with:
           root_file: AdityaPachupate.tex
-
-      - name: Move and Rename PDF
+      - name: Move and rename PDF
         run: |
           mkdir -p public
           mv AdityaPachupate.pdf public/Aditya_Pachupate_Resume.pdf
-
-      - name: Commit and Push PDF
+      - name: Commit and push
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
           git add public/Aditya_Pachupate_Resume.pdf
-          git commit -m "chore: auto-compile resume PDF [skip ci]" || echo "No changes to commit"
+          git commit -m "[skip ci] Update resume PDF"
           git push

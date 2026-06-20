@@ -1,0 +1,41 @@
+{
+  "socialMedia": {
+    "githubProfile": "https://github.com/AdityaPachupate",
+    "linkedinProfile": "https://www.linkedin.com/in/adityapachupate/",
+    "leetcode": "https://leetcode.com/u/adityapachupate/",
+    "gfg": "https://www.geeksforgeeks.org/user/adityapachupate/",
+    "email": "adityapachupate@gmail.com",
+    "phone": "+91 7378556711"
+  },
+  "projectLinks": {
+    "crmUrl": "https://crm-client-6bt9.onrender.com/",
+    "crmGithubProject": "https://github.com/AdityaPachupate/CRM-personal-copy-private",
+    "crmGithubSelected": "https://github.com/AdityaPachupate/crm-fullstack",
+    "moodFlixUrl": "https://mood-flix-five.vercel.app/",
+    "moodFlixGithub": "https://github.com/AdityaPachupate/MoodFlix",
+    "ecommerceGithub": "https://github.com/AdityaPachupate"
+  },
+  "otherLinks": {
+    "portfolio": "https://adityapachupate.vercel.app/",
+    "retroFolio": "https://adityapachupateretrofolio.vercel.app/",
+    "githubRepositories": "https://github.com/AdityaPachupate?tab=repositories",
+    "karadWiki": "https://en.wikipedia.org/wiki/Karad",
+    "resumeDriveLink": "/Aditya_Pachupate_Resume.pdf"
+  },
+  "experiences": [
+    {
+      "year": "Feb 2025 - May 2025",
+      "role": "Programmer Analyst Trainee",
+      "company": "Cognizant Technology solutions",
+      "description": "Developed scalable web applications using C#, .NET Core Web API, and Microservices architecture. Implemented gRPC for efficient inter-service communication and Redis for distributed caching. Worked with SQL databases, optimizing queries and managing data efficiently while collaborating in Agile teams.",
+      "technologies": [".NET 8", "Microservices", "gRPC", "Redis", "SQL Server"]
+    },
+    {
+      "year": "June 2024 - July 2024",
+      "role": "Intern Embedded Developer",
+      "company": "Amplifier electronics",
+      "description": "Worked on Intel MCS-51 microcontroller, developed embedded applications using C, and designed UI for system interfaces.",
+      "technologies": ["C", "Proteus", "MCS-51", "Embedded systems"]
+    }
+  ]
+}
